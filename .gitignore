@@ -1,3 +1,5 @@
 *.docx
 /.venv
-env_2
+/env_2
+/doc
+/resultats
