@@ -746,14 +746,25 @@ def check_website_complete(url: str) -> dict:
 def process_excel_concurrent(filepath: str, max_workers: int = 30):
     start_time = time.time()
 
-    # data_only=True : openpyxl retourne la VALEUR CALCULÉE des formules,
-    # pas la formule brute. INDISPENSABLE pour les cellules avec
-    # =SI(ESTNUM(CHERCHE(...));"";<numéro>) en colonne A.
-    # Sans data_only=True, col_a vaudrait "=SI(...)" (chaîne) → jamais traité.
+    #// data_only=True : openpyxl retourne la VALEUR CALCULÉE des formules,
+    #// pas la formule brute. INDISPENSABLE pour les cellules avec
+    #// =SI(ESTNUM(CHERCHE(...));"";<numéro>) en colonne A.
+    #// Sans data_only=True, col_a vaudrait "=SI(...)" (chaîne) → jamais traité.
+    #wb = openpyxl.load_workbook(filepath, data_only=True)
+    #//ws = wb.active # première feuille active (généralement la seule)
+    #ws = wb.worksheets[1] # deuxième feuille (index 1) pour les fichiers multi-feuilles 
+    #print(f"Traitement démarré sur la feuille : {ws.title}")
+
+ # 1. Lecture de la Feuille 2 du fichier d'origine
     wb = openpyxl.load_workbook(filepath, data_only=True)
-    #ws = wb.active # première feuille active (généralement la seule)
-    ws = wb.worksheets[1] # deuxième feuille (index 1) pour les fichiers multi-feuilles 
-    print(f"Traitement démarré sur la feuille : {ws.title}")
+    if len(wb.sheetnames) < 2:
+        print("⚠️-Erreur : Le fichier ne contient pas de deuxième feuille.\n")
+        print("▶️-Traitement démarré sur la feuille active.\n")
+        ws = wb.active # première feuille active (généralement la seule)
+    else:    
+        # Sélection de la deuxième feuille (index 1)
+        ws = wb.worksheets[1]
+        print(f"Traitement démarré sur la feuille : {ws.title}")
 
     tasks = []
     for row_idx, row in enumerate(ws.iter_rows(min_row=1), start=1):
@@ -827,7 +838,7 @@ def process_excel_concurrent(filepath: str, max_workers: int = 30):
     nom_dossier = "resultats"
 
     horodatage      = datetime.datetime.now().strftime("%d-%m-%Y_%Hh-%M-%S")
-    output_filename = f"res_e1_sites_sankara_yacouba_071837{horodatage}.xlsx"
+    output_filename = f"res_sites_20{horodatage}.xlsx"
     #output_filename = f"zak_resultats_sites_{horodatage}.xlsx"
     #output_filename = f"rayhana_resultats_sites_{horodatage}.xlsx"
     #output_filename = f"dri_resultats_sites_{horodatage}.xlsx"
@@ -846,7 +857,7 @@ def process_excel_concurrent(filepath: str, max_workers: int = 30):
 
 
 if __name__ == "__main__":
-    fichier_liste = sys.argv[1] if len(sys.argv) > 1 else "equipe_e1_sites_sankara_yacouba_071837.xlsx"
+    fichier_liste = sys.argv[1] if len(sys.argv) > 1 else "sites_20.xlsx"
     #fichier_liste = sys.argv[1] if len(sys.argv) > 1 else "zak_924_a_972_plateformes_burkina_faso.xlsx"
     #fichier_liste = sys.argv[1] if len(sys.argv) > 1 else "rayhana_973_a_1021_plateformes_burkina_faso.xlsx"
     #fichier_liste = sys.argv[1] if len(sys.argv) > 1 else "equipe_e1_sites_sawadogo_idrissa_071838.xlsx"
